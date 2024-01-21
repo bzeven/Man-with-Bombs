@@ -1,0 +1,227 @@
+[gd_scene load_steps=11 format=3 uid="uid://c0712e0ooxpx1"]
+
+[ext_resource type="Texture2D" uid="uid://ct8jc3dnm5uoh" path="res://Sprites/BOMB.png" id="1_5utah"]
+[ext_resource type="Texture2D" uid="uid://dq15nsq567grv" path="res://Sprites/FIRE.png" id="2_8stjf"]
+
+[sub_resource type="GDScript" id="GDScript_fojyd"]
+resource_name = "Bomb"
+script/source = "extends RigidBody2D
+class_name BOMB
+var exploded = false
+
+func _ready():
+	$Blast_Timer.start(3.0)
+	$AnimationPlayer.play(\"fuse\")
+
+func _physics_process(delta):
+	pass
+
+func explode():
+	exploded = true
+	$Blast.visible = true
+	$Blast/Area2D/Up.disabled = false
+	$Blast/Area2D/Down.disabled = false
+	$Blast/Area2D/Right.disabled = false
+	$Blast/Area2D/Left.disabled = false
+	$Blast_Timer.start(0.2)
+	
+func destroy_bomb():
+	queue_free()
+
+func _on_blast_timer_timeout():
+	if exploded == false:
+		explode()
+		$Sprite.visible = false
+	else:
+		destroy_bomb()
+
+
+
+func _on_area_2d_body_entered(body):
+	print(\"Body contact\")
+
+
+func _on_area_2d_area_entered(area):
+	print(\"Area Contact\")
+"
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_ydx1v"]
+
+[sub_resource type="SegmentShape2D" id="SegmentShape2D_vlu23"]
+a = Vector2(-28, 4)
+b = Vector2(4, 4)
+
+[sub_resource type="SeparationRayShape2D" id="SeparationRayShape2D_0q30y"]
+length = 48.0
+
+[sub_resource type="SeparationRayShape2D" id="SeparationRayShape2D_a2qb4"]
+length = 48.0
+
+[sub_resource type="Animation" id="Animation_ac5p4"]
+length = 0.001
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [0]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 0,
+"values": [Vector2(1, 1)]
+}
+
+[sub_resource type="Animation" id="Animation_5c4ct"]
+resource_name = "fuse"
+length = 3.0
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath("Sprite:frame")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0),
+"transitions": PackedFloat32Array(1),
+"update": 1,
+"values": [1]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath("Sprite:scale")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.4, 0.8, 1.1, 1.4, 1.7, 1.9, 2.1, 2.3, 2.4, 2.5, 2.6, 2.7, 2.8, 2.9, 3),
+"transitions": PackedFloat32Array(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1),
+"update": 0,
+"values": [Vector2(1, 1), Vector2(1.05, 1.05), Vector2(1, 1), Vector2(1.05, 1.05), Vector2(1, 1), Vector2(1.05, 1.05), Vector2(1, 1), Vector2(1.05, 1.05), Vector2(1, 1), Vector2(1.05, 1.05), Vector2(1, 1), Vector2(1.05, 1.05), Vector2(1, 1), Vector2(1.08, 1.08), Vector2(1, 1), Vector2(1.1, 1.1)]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_jdff1"]
+_data = {
+"RESET": SubResource("Animation_ac5p4"),
+"fuse": SubResource("Animation_5c4ct")
+}
+
+[node name="Bomb" type="RigidBody2D"]
+collision_layer = 8
+collision_mask = 3
+gravity_scale = 0.0
+script = SubResource("GDScript_fojyd")
+
+[node name="BombCollBox" type="CollisionShape2D" parent="."]
+shape = SubResource("SegmentShape2D_ydx1v")
+disabled = true
+
+[node name="BombInnerColl" type="StaticBody2D" parent="."]
+visible = false
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="BombInnerColl"]
+position = Vector2(12, -18)
+shape = SubResource("SegmentShape2D_vlu23")
+one_way_collision = true
+
+[node name="CollisionShape2D2" type="CollisionShape2D" parent="BombInnerColl"]
+position = Vector2(-12, 23)
+rotation = -3.14159
+shape = SubResource("SegmentShape2D_vlu23")
+one_way_collision = true
+
+[node name="CollisionShape2D3" type="CollisionShape2D" parent="BombInnerColl"]
+position = Vector2(21, 14)
+rotation = 1.5708
+shape = SubResource("SegmentShape2D_vlu23")
+one_way_collision = true
+
+[node name="CollisionShape2D4" type="CollisionShape2D" parent="BombInnerColl"]
+position = Vector2(-21, -9)
+rotation = -1.5708
+shape = SubResource("SegmentShape2D_vlu23")
+one_way_collision = true
+
+[node name="Sprite" type="Sprite2D" parent="."]
+texture = ExtResource("1_5utah")
+hframes = 4
+
+[node name="Blast" type="Sprite2D" parent="."]
+visible = false
+texture = ExtResource("2_8stjf")
+region_enabled = true
+region_rect = Rect2(32, 0, 32, 32)
+
+[node name="BlastLeft" type="Sprite2D" parent="Blast"]
+position = Vector2(-32, 0)
+texture = ExtResource("2_8stjf")
+flip_h = true
+region_enabled = true
+region_rect = Rect2(160, 0, 32, 32)
+
+[node name="BlastRight" type="Sprite2D" parent="Blast"]
+position = Vector2(32, 0)
+texture = ExtResource("2_8stjf")
+region_enabled = true
+region_rect = Rect2(160, 0, 32, 32)
+
+[node name="BlastUp" type="Sprite2D" parent="Blast"]
+position = Vector2(0, -32)
+texture = ExtResource("2_8stjf")
+region_enabled = true
+region_rect = Rect2(0, 0, 32, 32)
+
+[node name="BlastDown" type="Sprite2D" parent="Blast"]
+position = Vector2(0, 32)
+texture = ExtResource("2_8stjf")
+flip_v = true
+region_enabled = true
+region_rect = Rect2(0, 0, 32, 32)
+
+[node name="Area2D" type="Area2D" parent="Blast"]
+collision_layer = 8
+collision_mask = 62
+
+[node name="Up" type="CollisionShape2D" parent="Blast/Area2D"]
+rotation = 3.14159
+shape = SubResource("SeparationRayShape2D_0q30y")
+disabled = true
+
+[node name="Down" type="CollisionShape2D" parent="Blast/Area2D"]
+shape = SubResource("SeparationRayShape2D_a2qb4")
+disabled = true
+
+[node name="Left" type="CollisionShape2D" parent="Blast/Area2D"]
+rotation = 1.5708
+shape = SubResource("SeparationRayShape2D_a2qb4")
+disabled = true
+
+[node name="Right" type="CollisionShape2D" parent="Blast/Area2D"]
+rotation = 4.71239
+shape = SubResource("SeparationRayShape2D_a2qb4")
+disabled = true
+
+[node name="Blast_Timer" type="Timer" parent="."]
+wait_time = 3.0
+one_shot = true
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_jdff1")
+}
+
+[connection signal="area_entered" from="Blast/Area2D" to="." method="_on_area_2d_area_entered"]
+[connection signal="body_entered" from="Blast/Area2D" to="." method="_on_area_2d_body_entered"]
+[connection signal="timeout" from="Blast_Timer" to="." method="_on_blast_timer_timeout"]

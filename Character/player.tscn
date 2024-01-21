@@ -1,0 +1,117 @@
+[gd_scene load_steps=5 format=3 uid="uid://to6ntcajlwf5"]
+
+[ext_resource type="Texture2D" uid="uid://bv57coxpg88cs" path="res://Sprites/witch.png" id="1_8bq8v"]
+
+[sub_resource type="GDScript" id="GDScript_s1cbg"]
+script/source = "extends CharacterBody2D
+
+@onready var bombs = preload(\"res://Character/Bombs/Bomb.tscn\")
+
+@export var speed = 100
+var bomb_placed = 0
+var Current_Speed_level
+var explode 
+
+
+func _process(delta):
+	_bomb_placement()
+	
+
+func _physics_process(delta):
+	_move()
+	
+	
+	
+func _move():
+	var direction_x = Input.get_axis(\"LEFT\", \"RIGHT\")
+	if direction_x:
+		velocity.x = direction_x * speed
+	else:
+		velocity.x = move_toward(velocity.x, 0, speed)
+	if direction_x < 0:
+		$Sprite2D.frame = 0
+		$Sprite2D.flip_h = true
+	elif direction_x > 0:
+		$Sprite2D.frame = 0
+		$Sprite2D.flip_h = false
+	
+		
+	var direction_y = Input.get_axis(\"UP\", \"DOWN\")
+	if direction_y:
+		velocity.y = direction_y * speed
+	else:
+		velocity.y = move_toward(velocity.y, 0, speed)
+	if direction_y > 0:
+		$Sprite2D.frame = 1
+		$Sprite2D.flip_h = false
+	elif direction_y < 0:
+		$Sprite2D.frame = 1
+		$Sprite2D.flip_h = false
+	move_and_slide()
+
+
+func _bomb_placement():
+	if Input.is_action_just_pressed(\"ACTION_1\"):
+		if bomb_placed < $PlayerInformation.total_bomb_count:
+			bomb_placed += 1
+			$BombPlacement.start(2.9)
+			var bomb = bombs.instantiate()
+			bomb.position = self.position
+			get_parent().add_child(bomb)
+		else:
+			print(\"Too many bombs already placed\")
+		
+
+func _on_bomb_placement_timeout():
+	bomb_placed -= 1
+	if bomb_placed < 0:
+		bomb_placed = 0
+
+"
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_5r4pe"]
+size = Vector2(26, 21)
+
+[sub_resource type="GDScript" id="GDScript_o8tkr"]
+script/source = "extends Node2D
+
+@export var total_bomb_count = 1
+@export var speed_modifier = 6
+@export var firepower = 1
+@export var bomb_kick = false
+@export var power_glove = false
+
+
+# Called when the node enters the scene tree for the first time.
+func _ready():
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
+func _process(delta):
+	pass
+"
+
+[node name="Player" type="CharacterBody2D"]
+collision_layer = 2
+collision_mask = 11
+script = SubResource("GDScript_s1cbg")
+speed = 80
+
+[node name="Sprite2D" type="Sprite2D" parent="."]
+texture = ExtResource("1_8bq8v")
+hframes = 2
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="."]
+position = Vector2(2, 5.5)
+shape = SubResource("RectangleShape2D_5r4pe")
+
+[node name="PlayerInformation" type="Node2D" parent="."]
+script = SubResource("GDScript_o8tkr")
+total_bomb_count = 2
+
+[node name="BombPlacement" type="Timer" parent="."]
+wait_time = 2.9
+one_shot = true
+
+[connection signal="timeout" from="BombPlacement" to="." method="_on_bomb_placement_timeout"]
